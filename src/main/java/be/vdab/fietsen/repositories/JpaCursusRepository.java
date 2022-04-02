@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.util.Optional;
+import java.util.UUID;
+
 @Repository
 public class JpaCursusRepository implements CursusRepository{
     private final EntityManager manager;
@@ -14,7 +16,7 @@ public class JpaCursusRepository implements CursusRepository{
     }
 
     @Override
-    public Optional<Cursus> findById(long id) {
+    public Optional<Cursus> findById(UUID id) {
         return Optional.ofNullable(manager.find(Cursus.class, id));
     }
 

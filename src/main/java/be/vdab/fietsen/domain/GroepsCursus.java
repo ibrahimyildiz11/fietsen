@@ -2,10 +2,12 @@ package be.vdab.fietsen.domain;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.LocalDate;
 
 @Entity
-@DiscriminatorValue("G")
+@Table(name = "groepscursussen")
+//@DiscriminatorValue("G")
 public class GroepsCursus extends Cursus{
     private LocalDate van;
     private LocalDate tot;
