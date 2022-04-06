@@ -11,12 +11,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class DocentTest {
     private final static BigDecimal WEDDE = BigDecimal.valueOf(200);
     private Docent docent1;
+    private Docent docent2;
     private Campus campus1;
+
+    /*public DocentTest(Docent docent1, Campus campus1) {
+        this.docent1 = docent1;
+        this.campus1 = campus1;
+    }*/
 
     @BeforeEach
     void beforeEach() {
         campus1 = new Campus("test", new Adres("test", "test", "test", "test"));
-        docent1 = new Docent("test","test",WEDDE, "test@test.be", Geslacht.MAN, campus1);
+        docent1 = new Docent("test","test",WEDDE, "test@test.be", Geslacht.MAN/*, campus1*/);
+        docent2 = new Docent("test2", "test2", WEDDE, "test2@test.be", Geslacht.MAN);
     }
     @Test
     void opslag() {
@@ -75,6 +82,12 @@ class DocentTest {
         docent1.addBijnaam("test");
         assertThat(docent1.removeBijnaam("test2")).isFalse();
         assertThat(docent1.getBijnamen()).containsOnly("test");
+    }
+
+    @Test
+    void meerdereDocentenKunnenTotDezelfdeCampusBehoren() {
+        assertThat(campus1.add(docent1)).isTrue();
+        assertThat(campus1.add(docent2)).isTrue();
     }
 
 

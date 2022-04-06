@@ -34,7 +34,7 @@ class DefaultDocentServiceTest {
         var campus = new Campus("test", new Adres("test", "test", "test", "test"));
         docent = new Docent(
                 "test", "test", BigDecimal.valueOf(100),
-                "test@test.be", Geslacht.MAN, campus);
+                "test@test.be", Geslacht.MAN/*, campus*/);
     }
 
     @Test

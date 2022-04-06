@@ -19,7 +19,7 @@ public class TelefoonNr {
         this.opmerking = opmerking;
     }
 
-    protected TelefoonNr(){};
+    protected TelefoonNr(){}
 
     public String getNummer() {
         return nummer;

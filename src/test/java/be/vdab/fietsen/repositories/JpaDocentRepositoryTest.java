@@ -45,18 +45,22 @@ class JpaDocentRepositoryTest
 
     @BeforeEach
     void beforeEach() {
+
         campus = new Campus("test", new Adres("test", "test", "test", "test"));
         docent = new Docent("test", "test", BigDecimal.TEN,
-                "test@test.be",Geslacht.MAN, campus);
+                "test@test.be",Geslacht.MAN/*, campus*/);
+        campus.add(docent);
     }
 
     @Test
     void create() {
         manager.persist(campus);
         repository.create(docent);
+        manager.flush();
         assertThat(docent.getId()).isPositive();
         assertThat(countRowsInTableWhere(DOCENTEN, "id = " +
                 docent.getId() + " and campusId = " + campus.getId()));
+        assertThat(campus.getDocenten().contains(docent)).isTrue();
     }
     @Test
     void findById() {
@@ -168,10 +172,10 @@ class JpaDocentRepositoryTest
                 "bijnaam = 'test' and docentId = " + docent.getId())).isOne();
     }
 
-    @Test
+    /*@Test
     void campusLazyLoaded() {
         assertThat(repository.findById(idVanTestMan()))
                 .hasValueSatisfying(
                         docent -> assertThat(docent.getCampus().getNaam()).isEqualTo("test"));
-    }
+    }*/
 }
