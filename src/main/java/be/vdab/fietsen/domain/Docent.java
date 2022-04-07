@@ -3,12 +3,15 @@ package be.vdab.fietsen.domain;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "docenten")
+@NamedEntityGraph(name = Docent.MET_CAMPUS,
+attributeNodes = @NamedAttributeNode("campus"))
 public class Docent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -27,6 +30,12 @@ public class Docent {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "campusId")
     private Campus campus;
+    @ManyToMany(mappedBy = "docenten")
+    private Set<Verantwoordelijkheid> verantWoordelijkheden = new LinkedHashSet<>();
+    @Version
+    private Timestamp versie;
+
+    public static final String MET_CAMPUS = "Docent.metCampus";
 
     public Docent(String voornaam, String familienaam, BigDecimal wedde,
                   String emailAdres, Geslacht geslacht, Campus campus) {
@@ -99,6 +108,27 @@ public class Docent {
         var factor = BigDecimal.ONE.add(percentage.divide(BigDecimal.valueOf(100)));
         wedde = wedde.multiply(factor).setScale(2, RoundingMode.HALF_UP);
     }
+
+    public boolean add(Verantwoordelijkheid verantWoordelijkheid) {
+        var toegevoegd = verantWoordelijkheden.add(verantWoordelijkheid);
+        if (! verantWoordelijkheid.getDocenten().contains(this)) {
+            verantWoordelijkheid.add(this);
+        }
+        return toegevoegd;
+    }
+
+    public boolean remove(Verantwoordelijkheid verantWoordelijkheid) {
+        var verwijderd = verantWoordelijkheden.remove(verantWoordelijkheid);
+        if (verantWoordelijkheid.getDocenten().contains(this)) {
+            verantWoordelijkheid.remove(this);
+        }
+        return verwijderd;
+    }
+
+    public Set<Verantwoordelijkheid> getVerantwoordelijkheden() {
+        return Collections.unmodifiableSet(verantWoordelijkheden);
+    }
+
 
     @Override
     public boolean equals(Object object) {

@@ -1,9 +1,6 @@
 package be.vdab.fietsen.repositories;
 
-import be.vdab.fietsen.domain.Adres;
-import be.vdab.fietsen.domain.Campus;
-import be.vdab.fietsen.domain.Docent;
-import be.vdab.fietsen.domain.Geslacht;
+import be.vdab.fietsen.domain.*;
 import be.vdab.fietsen.projections.AantalDocentenPerWedde;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +15,8 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest(showSql = false)
-@Sql({"/insertCampus.sql","/insertDocent.sql"})
+@Sql({"/insertCampus.sql", "/insertVerantwoordelijkheid.sql",
+        "/insertDocent.sql", "/insertDocentVerantwoordelijkheid.sql"})
 @Import(JpaDocentRepository.class)
 class JpaDocentRepositoryTest
         extends AbstractTransactionalJUnit4SpringContextTests {
@@ -26,6 +24,8 @@ class JpaDocentRepositoryTest
     private final EntityManager manager;
     private static final String DOCENTEN = "Docenten";
     private static final String DOCENTEN_BIJNAMEN = "docentenbijnamen";
+    private static final String DOCENTEN_VERANTWOORDELIJKHEDEN =
+            "docentenverantwoordelijkheden";
     private Docent docent;
     private Campus campus;
     private long idVanTestMan() {
@@ -107,11 +107,17 @@ class JpaDocentRepositoryTest
         var duizend = BigDecimal.valueOf(1_000);
         var tweeduizend = BigDecimal.valueOf(2_000);
         var docenten = repository.findByWeddeBetween(duizend, tweeduizend);
+        manager.clear();
         assertThat(docenten)
                 .hasSize(countRowsInTableWhere(DOCENTEN,
                         "wedde between 1000 and 2000"))
                 .allSatisfy(
                         docent -> assertThat(docent.getWedde()).isBetween(duizend, tweeduizend));
+
+        assertThat(docenten)
+                .extracting(Docent::getCampus)
+                .extracting(Campus::getNaam)
+                .isNotNull();
     }
 
     @Test
@@ -176,5 +182,25 @@ class JpaDocentRepositoryTest
         assertThat(repository.findById(idVanTestMan()))
                 .hasValueSatisfying(
                         docent -> assertThat(docent.getCampus().getNaam()).isEqualTo("test"));
+    }
+
+    @Test
+    void verantwoordelijkhedenLezen() {
+        assertThat(repository.findById(idVanTestMan()))
+                .hasValueSatisfying(
+                        docent -> assertThat(docent.getVerantwoordelijkheden())
+                                .containsOnly(new Verantwoordelijkheid("test")));
+    }
+    @Test
+    void verantwoordelijkheidToevoegen() {
+        var verantwoordelijkheid = new Verantwoordelijkheid("test2");
+        manager.persist(verantwoordelijkheid);
+        manager.persist(campus);
+        repository.create(docent);
+        docent.add(verantwoordelijkheid);
+        manager.flush();
+        assertThat(countRowsInTableWhere(DOCENTEN_VERANTWOORDELIJKHEDEN,
+                "docentId = " + docent.getId() +
+                        " and verantwoordelijkheidId = " + verantwoordelijkheid.getId())).isOne();
     }
 }
